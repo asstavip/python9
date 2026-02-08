@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, ValidationError, model_validator
-from typing import Optional, List
+from typing import List
 from datetime import datetime
 from enum import Enum
 
@@ -44,7 +44,9 @@ class SpaceMission(BaseModel):
     destination: str = Field(min_length=3, max_length=50)
     launch_date: datetime
     duration_days: int = Field(ge=1, le=3650)
-    crew: List[CrewMember] = Field(default_factory=list, min_length=1, max_length=12)
+    crew: List[CrewMember] = Field(
+        default_factory=list, min_length=1, max_length=12
+        )
     mission_status: str = Field(default="planned")
     budget_millions: float = Field(ge=1, le=10000)
 
@@ -68,12 +70,13 @@ class SpaceMission(BaseModel):
                     crew_h_exp += 1
             if crew_h_exp * 2 < len(self.crew):
                 raise ValueError(
-                    "Long missions (> 365 days) need 50% experienced crew (5+ years)"
+                    "Long missions (> 365 days)"
+                    " need 50% experienced crew (5+ years)"
                 )
 
         if self.crew:
             for cr in self.crew:
-                if cr.is_active == False:
+                if cr.is_active is False:
                     raise ValueError("All crew members must be active")
 
 
@@ -130,7 +133,8 @@ Crew members:""")
 
     for member in valid_mission.crew:
         print(
-            f"- {member.name} ({member.rank.value.lower()}) - {member.specialization}"
+            f"- {member.name}"
+            f" ({member.rank.value.lower()}) - {member.specialization}"
         )
 
     try:
@@ -166,4 +170,4 @@ Crew members:""")
             ],
         )
     except ValidationError as e:
-        print("Mission must have at least one Commander or Captain")
+        print(e)
